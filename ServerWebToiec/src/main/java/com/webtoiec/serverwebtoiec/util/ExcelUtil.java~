@@ -1,0 +1,96 @@
+package com.webtoiec.serverwebtoiec.util;
+
+import com.webtoiec.serverwebtoiec.entities.Question_Listening;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.PictureData;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFPicture;
+import org.apache.poi.xssf.usermodel.XSSFShape;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ExcelUtil {
+  public List<Question_Listening> getListQuestionListeningFromFileExcel(InputStream excelFile)
+  {
+    try {
+      List<Question_Listening> listQuestionListening = new ArrayList<>();
+
+      Workbook workbook = new XSSFWorkbook(excelFile);
+
+      Sheet datatypeSheet = workbook.getSheetAt(0);
+
+      DataFormatter fmt = new DataFormatter();
+
+      Iterator<Row> iterator = datatypeSheet.iterator();
+
+      Row firstRow = iterator.next();
+
+      Cell firstCell = firstRow.getCell(0);
+
+      System.out.println(firstCell.getStringCellValue());
+
+      XSSFDrawing dp = (XSSFDrawing) datatypeSheet.createDrawingPatriarch();
+
+      List<XSSFShape> pics = dp.getShapes();
+
+      while (iterator.hasNext()) {
+        Row currentRow = iterator.next();
+        Question_Listening questionListening = new Question_Listening();
+        questionListening.setQuestion_listening_ask(fmt.formatCellValue(currentRow.getCell(0)));
+        questionListening.setQuestion_listening_answer_correct(fmt.formatCellValue(currentRow.getCell(1)));
+        questionListening.setQuestion_listening_answer_1(fmt.formatCellValue(currentRow.getCell(2)));
+        questionListening.setQuestion_listening_answer_2(fmt.formatCellValue(currentRow.getCell(3)));
+        questionListening.setQuestion_listening_answer_3(fmt.formatCellValue(currentRow.getCell(4)));
+        questionListening.setQuestion_listening_answer_4(fmt.formatCellValue(currentRow.getCell(5)));
+        questionListening.setQuestion_listening_explain(fmt.formatCellValue(currentRow.getCell(6)));
+        questionListening.setQuestion_listening_serial(fmt.formatCellValue(currentRow.getCell(7)));
+
+        for (Iterator<? extends XSSFShape> it = pics.iterator(); it.hasNext();) {
+          XSSFPicture inpPic = (XSSFPicture) it.next();
+
+          XSSFClientAnchor clientAnchor = inpPic.getClientAnchor();
+          PictureData pic = inpPic.getPictureData();
+          byte[] data = pic.getData();
+          if (clientAnchor.getCol1() == 8 & clientAnchor.getRow1() == currentRow.getRowNum()) {
+            byte[] pictureData = data;
+            questionListening.setQuestion_listening_image_data(pictureData);
+          }
+        }
+        System.out.println(questionListening.toString());
+        questionListening.setQuestion_listening_script(fmt.formatCellValue(currentRow.getCell(8)));
+        questionListening.setQuestion_listening_audio(getAudioData(currentRow.getCell(9)));
+        listQuestionListening.add(questionListening);
+      }
+      workbook.close();
+      return listQuestionListening;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private byte[] getAudioData(Cell cell) {
+    try {
+      InputStream audioInputStream = cell.getRichTextString().getInputStream();
+      ByteArrayOutputStream audioOutputStream = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int bytesRead;
+      while ((bytesRead = audioInputStream.read(buffer)) != -1) {
+        audioOutputStream.write(buffer, 0, bytesRead);
+      }
+      return audioOutputStream.toByteArray();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+}

@@ -1,0 +1,5 @@
+package com.webtoiec.serverwebtoiec.service.impl;
+
+public interface VocabularyService {
+
+}

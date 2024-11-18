@@ -1,0 +1,8 @@
+package com.webtoiec.serverwebtoiec.dto;
+
+import java.util.Map;
+
+public class ResponseObject {
+  private Object data;
+  private Map<String, String> errorMessage = null;
+}

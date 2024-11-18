@@ -1,0 +1,12 @@
+package com.webtoiec.serverwebtoiec.repository;
+
+import com.webtoiec.serverwebtoiec.entities.Vocabulary;
+import com.webtoiec.serverwebtoiec.entities.Vocabulary_Lesson_Content;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Component;
+
+@Component
+public interface VocabularyLessonContentRepo extends JpaRepository<Vocabulary_Lesson_Content, Integer> {
+  List<Vocabulary_Lesson_Content> findByVocabulary(Vocabulary vocabulary);
+}

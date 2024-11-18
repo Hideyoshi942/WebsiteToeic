@@ -1,0 +1,9 @@
+package com.webtoiec.serverwebtoiec.service;
+
+import com.webtoiec.serverwebtoiec.service.impl.VocabularyService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class VocabularyImpl implements VocabularyService {
+  
+}

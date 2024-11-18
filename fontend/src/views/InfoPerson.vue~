@@ -1,0 +1,206 @@
+<script setup>
+
+import AppHeader from "@/components/Header.vue";
+
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+// Lấy thông tin người dùng từ localStorage
+const usertoeic = JSON.parse(localStorage.getItem('usertoeic'));
+const userInfo = ref({});
+const showModal = ref(false);
+const showPasswordModal = ref(false);
+
+const passwordData = ref({
+  oldPassword: '',
+  newPassword: '',
+  comfirmPassword: ''
+});
+
+// Hàm lấy thông tin người dùng
+const fetchUser = async () => {
+  try {
+    const response = await axios.get(`http://localhost:8080/api/admin/profile/${usertoeic.id}`);
+    userInfo.value = response.data;
+
+    // Lưu thông tin gốc để so sánh khi cập nhật
+    userInfo.value.originalUsername = response.data.username;
+    userInfo.value.originalPhonenumber = response.data.phonenumber;
+    userInfo.value.originalAddress = response.data.address;
+  } catch (error) {
+    console.error('Có lỗi xảy ra khi tải thông tin người dùng:', error);
+  }
+};
+
+// Hàm cập nhật thông tin người dùng
+const updateUserInfo = async () => {
+  const updatedUser = {};
+
+  if (userInfo.value.username !== userInfo.value.originalUsername) {
+    updatedUser.username = userInfo.value.username;
+  }
+  if (userInfo.value.phonenumber !== userInfo.value.originalPhonenumber) {
+    updatedUser.phonenumber = userInfo.value.phonenumber;
+  }
+  if (userInfo.value.address !== userInfo.value.originalAddress) {
+    updatedUser.address = userInfo.value.address;
+  }
+
+  try {
+    const response = await axios.put(`http://localhost:8080/api/admin/profile/update/${usertoeic.id}`, updatedUser);
+    if (response.data.status === "Success") {
+      alert("Cập nhật thông tin thành công!");
+      showModal.value = false;
+      fetchUser();
+    } else {
+      alert("Cập nhật thất bại!");
+    }
+  } catch (error) {
+    console.error('Có lỗi xảy ra khi cập nhật thông tin:', error);
+  }
+};
+
+// Hàm đổi mật khẩu
+const updatePassword = async () => {
+  if (passwordData.value.newPassword !== passwordData.value.comfirmPassword) {
+    alert("Mật khẩu mới và mật khẩu xác nhận không khớp.");
+    return;
+  }
+  try {
+    const response = await axios.put(
+        `http://localhost:8080/api/admin/profile/changePass/${usertoeic.id}`,
+        null,
+        {
+          params: {
+            oldPassword: passwordData.value.oldPassword,
+            newPassword: passwordData.value.newPassword,
+            comfirmPassword: passwordData.value.comfirmPassword
+          }
+        }
+    );
+    if (response.data === "Đổi mật khẩu thành công") {
+      alert("Đổi mật khẩu thành công!");
+      showPasswordModal.value = false;
+    } else {
+      alert("Đổi mật khẩu thất bại!");
+    }
+  } catch (error) {
+    console.error('Có lỗi xảy ra khi đổi mật khẩu:', error);
+  }
+};
+
+onMounted(fetchUser);
+</script>
+
+<template>
+  <AppHeader></AppHeader>
+  <div class="container mt-5">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white text-center">
+        <h3>Thông tin cá nhân</h3>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Họ Tên</label>
+          <input type="text" class="form-control" :value="userInfo.username" readonly />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email đăng ký</label>
+          <input type="email" class="form-control" :value="userInfo.email" readonly />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Số điện thoại</label>
+          <input type="text" class="form-control" :value="userInfo.phonenumber" readonly />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Địa chỉ</label>
+          <input type="text" class="form-control" :value="userInfo.address" readonly />
+        </div>
+        <div class="text-center" style="margin-top: 20px;">
+          <button style="margin-right: 20px;" class="btn btn-success me-2" @click="showModal = true">Cập nhật thông tin</button>
+          <button class="btn btn-primary" @click="showPasswordModal = true">Đổi mật khẩu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Cập Nhật Thông Tin -->
+    <div class="modal" :class="{ fade: !showModal, show: showModal }" style="display: showModal ? 'block' : 'none';">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Cập nhật thông tin</h5>
+            <button type="button" class="btn-close" @click="showModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateUserInfo">
+              <div class="mb-3">
+                <label for="username" class="form-label">Họ tên</label>
+                <input v-model="userInfo.username" id="username" type="text" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label for="phonenumber" class="form-label">Số điện thoại</label>
+                <input v-model="userInfo.phonenumber" id="phonenumber" type="text" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label for="address" class="form-label">Địa chỉ</label>
+                <input v-model="userInfo.address" id="address" type="text" class="form-control" />
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="showModal = false">Hủy</button>
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Đổi Mật Khẩu -->
+    <div class="modal" :class="{ fade: !showPasswordModal, show: showPasswordModal }" style="display: showPasswordModal ? 'block' : 'none';">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Đổi mật khẩu</h5>
+            <button type="button" class="btn-close" @click="showPasswordModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updatePassword">
+              <div class="mb-3">
+                <label for="oldPassword" class="form-label">Mật khẩu cũ</label>
+                <input v-model="passwordData.oldPassword" id="oldPassword" type="password" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                <input v-model="passwordData.newPassword" id="newPassword" type="password" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label for="comfirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                <input v-model="passwordData.comfirmPassword" id="comfirmPassword" type="password" class="form-control" />
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="showPasswordModal = false">Hủy</button>
+                <button type="submit" class="btn btn-primary">Đổi mật khẩu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.modal-sm {
+  max-width: 400px;
+}
+
+.modal.fade {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal.show {
+  opacity: 1;
+  display: block !important;
+}
+</style>

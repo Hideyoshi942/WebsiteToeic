@@ -1,0 +1,26 @@
+package com.webtoiec.serverwebtoiec.service;
+
+import com.webtoiec.serverwebtoiec.entities.CommentGrammar;
+import com.webtoiec.serverwebtoiec.entities.Grammar;
+import com.webtoiec.serverwebtoiec.repository.GrammarRepo;
+import com.webtoiec.serverwebtoiec.service.impl.CommentGrammarService;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class CommentGrammarImpl implements CommentGrammarService {
+  @Autowired
+  GrammarRepo grammarRepo;
+
+
+  @Override
+  public List<CommentGrammar> findByGramamar(Grammar grammar) {
+    return List.of();
+  }
+
+  @Override
+  public void save(CommentGrammar commentGrammar) {
+
+  }
+}

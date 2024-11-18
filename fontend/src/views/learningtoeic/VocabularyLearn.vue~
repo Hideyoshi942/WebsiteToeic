@@ -1,0 +1,125 @@
+<template>
+  <div class="d-flex flex-column min-vh-100">
+    <AppHeader />
+    <main class="flex-grow-1">
+      <div class="container mt-5">
+        <!-- Tiêu đề trang -->
+        <div class="text-center mb-4">
+          <h3 class="text-primary fw-bold">Học Từ Vựng</h3>
+          <p class="text-muted">Danh sách các bài học từ vựng, hãy chọn bài học để bắt đầu!</p>
+        </div>
+
+        <!-- Thông báo lỗi -->
+        <div v-if="errorMessage" class="alert alert-danger text-center">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Danh sách các bài học từ vựng -->
+        <div class="row gy-4">
+          <div
+              v-for="(vocab) in vocabList"
+              :key="vocab.vocabularyid"
+              class="col-md-4 d-flex justify-content-center"
+          >
+            <div class="card h-100 shadow-sm text-center" style="width: 18rem;">
+              <img
+                  :src="vocab.vocabularyimage"
+                  alt="Vocabulary Image"
+                  class="card-img-top"
+                  style="height: 200px; object-fit: cover; border-radius: 10px 10px 0 0;"
+              />
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-primary fw-bold">{{ vocab.vocabularyname }}</h5>
+                <p class="card-text text-muted">Chủ đề: "{{ vocab.vocabularyname }}"</p>
+                <button
+                    class="btn btn-primary mt-auto"
+                    @click="$router.push({ name: 'VocabularyLessonContent', params: { id: vocab.vocabularyid } })"
+                >
+                  Bắt đầu học
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <FooterPage />
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import AppHeader from '@/components/Header.vue';
+import FooterPage from '@/components/FooterPage.vue';
+
+// Trạng thái
+const vocabList = ref([]);
+const errorMessage = ref('');
+
+// Tải danh sách bài học từ vựng
+const loadVocabLessons = async () => {
+  try {
+    const { data } = await axios.get('http://localhost:8080/api/admin/vocab/loadVocab');
+    vocabList.value = data.map((vocab) => ({
+      vocabularyid: vocab.vocabularyid,
+      vocabularyname: vocab.vocabularyname,
+      vocabularyimage: `http://localhost:8080${vocab.vocabularyimage}`,
+    }));
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách bài học từ vựng:', error);
+    errorMessage.value = 'Không thể tải danh sách bài học từ vựng. Vui lòng thử lại sau.';
+  }
+};
+
+onMounted(loadVocabLessons);
+</script>
+
+<style scoped>
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+  border-radius: 10px 10px 0 0;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.btn {
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+</style>

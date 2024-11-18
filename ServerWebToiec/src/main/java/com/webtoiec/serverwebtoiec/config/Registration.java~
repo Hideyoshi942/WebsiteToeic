@@ -1,0 +1,7 @@
+package com.webtoiec.serverwebtoiec.config;
+
+public class Registration {
+  private final String registrationId;
+  private final String uri;
+  private final String clientName;
+}

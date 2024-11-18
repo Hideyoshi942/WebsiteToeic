@@ -1,0 +1,253 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+// Reactive states
+const modalVisible = ref(false);
+const modalTitle = ref('Thêm mới Exam');
+const idExam = ref(null);
+const nameBaiThiThu = ref('');
+const infoSuccess = ref('');
+const exams = ref([]);
+const fileExcel = ref(null);
+const fileImage = ref(null);
+const fileImageQuestions = ref([]);
+const fileListening = ref([]);
+
+// Load all exams
+const loadAllBaiThiThu = async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/api/admin/practicetest/loadpracticetest');
+    exams.value = response.data.map(test => ({
+      ...test,
+      practicetestimage: `http://localhost:8080${test.practicetestimage}`
+    }));
+  } catch (error) {
+    console.error('Error loading exams:', error);
+  }
+};
+
+// Form submit handler
+const handleFormSubmit = async () => {
+  const formData = new FormData();
+  formData.append('name', nameBaiThiThu.value);
+  formData.append('file_excel', fileExcel.value);
+  formData.append('file_image', fileImage.value);
+
+  fileImageQuestions.value.forEach(file => {
+    formData.append('file_image_question', file);
+  });
+
+  Array.from(fileListening.value).forEach(file => {
+    formData.append('file_listening', file);
+  });
+
+  try {
+    if (idExam.value) {
+      formData.append('idExam', idExam.value);
+      await axios.post('http://localhost:8080/api/admin/practicetest/save', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      infoSuccess.value = 'Cập nhật bài thi thử thành công';
+    } else {
+      await axios.post('http://localhost:8080/api/admin/practicetest/save', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      infoSuccess.value = 'Thêm mới bài thi thử thành công';
+    }
+    modalVisible.value = false;
+    loadAllBaiThiThu();
+  } catch (error) {
+    console.error('Error:', error);
+    infoSuccess.value = 'Có lỗi xảy ra.';
+  }
+};
+
+// Edit exam
+const editExam = async (examId) => {
+  modalVisible.value = true;
+  modalTitle.value = 'Cập nhật bài thi thử';
+  idExam.value = examId;
+
+  try {
+    const response = await axios.get(`http://localhost:8080/api/admin/practicetest/infoPracticeTest/${examId}`);
+    nameBaiThiThu.value = response.data;
+  } catch (error) {
+    console.error('Error fetching exam info:', error);
+  }
+};
+
+// Delete exam
+const deleteExam = async (examId) => {
+  if (confirm('Bạn muốn xóa bài thi thử này?')) {
+    try {
+      await axios.post(`http://localhost:8080/api/admin/practicetest/delete/${examId}`);
+      infoSuccess.value = 'Xóa bài thi thử thành công';
+      loadAllBaiThiThu();
+    } catch (error) {
+      console.error('Error deleting exam:', error);
+      infoSuccess.value = 'Có lỗi xảy ra.';
+    }
+  }
+};
+
+// Modal toggling
+const openModal = () => {
+  modalVisible.value = true;
+  modalTitle.value = 'Thêm mới Exam';
+  idExam.value = null;
+  nameBaiThiThu.value = '';
+  fileExcel.value = null;
+  fileImage.value = null;
+  fileImageQuestions.value = [];
+  fileListening.value = [];
+};
+
+const closeModal = () => {
+  modalVisible.value = false;
+};
+
+// Load exams on component mount
+onMounted(() => {
+  loadAllBaiThiThu();
+});
+</script>
+
+<template>
+  <div class="content" style="margin-left: 20%;">
+    <h3>Quản lý bài thi thử Toeic</h3>
+    <button class="btn btn-success" @click="openModal">Thêm mới</button>
+    <h4 class="info-message">{{ infoSuccess }}</h4>
+
+    <table class="table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tên bài thi thử</th>
+        <th>Ảnh</th>
+        <th>Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="exam in exams" :key="exam.practicetestid">
+        <td style="text-align: center;">{{ exam.practicetestid }}</td>
+        <td>{{ exam.practicetestname }}</td>
+        <td style="text-align: center;">
+          <img :src="exam.practicetestimage" alt="Hình ảnh bài thi" class="image-preview" />
+        </td>
+        <td style="text-align: center;">
+          <button class="btn btn-warning" @click="editExam(exam.practicetestid)">Cập nhật</button>
+          <button style="margin-left: 10px;" class="btn btn-danger" @click="deleteExam(exam.practicetestid)">Xóa</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Modal -->
+    <div v-if="modalVisible" class="modal">
+      <div class="modal-dialog" style="margin-top: 60px">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4>{{ modalTitle }}</h4>
+            <button class="close" @click="closeModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Tên bài thi thử</label>
+              <input v-model="nameBaiThiThu" type="text" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Ảnh bài thi thử</label>
+              <input type="file" @change="fileImage = $event.target.files[0]" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>File nội dung (Excel)</label>
+              <input type="file" @change="fileExcel = $event.target.files[0]" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>File ảnh câu hỏi</label>
+              <input type="file" @change="fileImageQuestions = Array.from($event.target.files)" multiple class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>File nghe câu hỏi</label>
+              <input type="file" @change="fileListening = Array.from($event.target.files)" multiple class="form-control" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="closeModal">Đóng</button>
+            <button class="btn btn-primary" @click="handleFormSubmit">Xác nhận</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.content {
+  padding: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.table th {
+  background-color: #f4f4f4;
+  text-align: left;
+}
+
+.image-preview {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: cover;
+}
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-dialog {
+  background: #fff;
+  border-radius: 5px;
+  width: 500px;
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-body .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-footer .btn {
+  padding: 8px 20px;
+}
+</style>

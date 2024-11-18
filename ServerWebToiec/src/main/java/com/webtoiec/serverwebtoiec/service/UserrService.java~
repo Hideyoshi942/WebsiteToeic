@@ -1,0 +1,34 @@
+package com.webtoiec.serverwebtoiec.service;
+
+import com.webtoiec.serverwebtoiec.model.User;
+import com.webtoiec.serverwebtoiec.repository.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserrService {
+
+  @Autowired
+  private UserRepo repo;
+
+  @Autowired
+  private JWTService jwtService;
+
+  @Autowired
+  private AuthenticationManager authManager;
+
+  private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+
+  public User register(User user) {
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    return repo.save(user);
+  }
+
+  public String verify(String token) {
+    Authentication authentication =
+
+  }
+}
