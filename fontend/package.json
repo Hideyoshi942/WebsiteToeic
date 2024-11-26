@@ -13,6 +13,7 @@
     "bootstrap": "4",
     "codemirror": "5",
     "core-js": "^3.8.3",
+    "fontend": "file:",
     "jquery": "^3.7.1",
     "jquery-validation": "^1.21.0",
     "jwt-decode": "^4.0.0",
