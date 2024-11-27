@@ -2,7 +2,7 @@
 
 Welcome to the TOEIC Learning and Practice Website project. This is a web application designed to help users learn and practice for the TOEIC exam through multiple-choice questions, listening and reading exercises, and additional helpful features. The application is built with Vue.js for the Front-End and Spring Boot for the Back-End, providing a smooth and efficient user experience.
 
-## Mục lục
+## Table of Contents
 
 - [Features](#features)
 - [Technologies Used](#technologies-used)
