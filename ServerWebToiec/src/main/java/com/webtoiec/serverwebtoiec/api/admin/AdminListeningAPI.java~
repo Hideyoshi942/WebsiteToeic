@@ -267,7 +267,8 @@ public class AdminListeningAPI {
       @RequestParam("listeningpart") int listeningpart,
       @RequestParam("listeningname") String listeningname,
       @RequestParam("file_questionlistening") MultipartFile file_questionlistening,
-      @RequestParam("file_questionlisteningaudio") MultipartFile[] file_questionlisteningaudio
+      @RequestParam("file_questionlisteningaudio") MultipartFile[] file_questionlisteningaudio,
+      @RequestParam("file_questionlisteningimage") MultipartFile[] file_questionlisteningimage
   ) {
     List<String> response = new ArrayList<>();
     String rootDirectory = Paths.get("src/main").toAbsolutePath().toString();
@@ -282,6 +283,10 @@ public class AdminListeningAPI {
       for (MultipartFile single_listening : file_questionlisteningaudio) {
         Path pathAudioQuestion = Paths.get(rootDirectory + "/resources/static/audio/listening/"   + listening.getListeningid() + "." + single_listening.getOriginalFilename());
         single_listening.transferTo(new File(pathAudioQuestion.toString()));
+      }
+      for (MultipartFile single_listening : file_questionlisteningimage) {
+        Path pathImmageQuestion = Paths.get(rootDirectory + "/resources/static/img/listening/"   + listening.getListeningid() + "." + single_listening.getOriginalFilename());
+        single_listening.transferTo(new File(pathImmageQuestion.toString()));
       }
       listening.setListeninglevel(listeninglevel);
       listening.setListeningpart(listeningpart);

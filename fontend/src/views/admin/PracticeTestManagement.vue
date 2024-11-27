@@ -13,6 +13,7 @@ const fileExcel = ref(null);
 const fileImage = ref(null);
 const fileImageQuestions = ref([]);
 const fileListening = ref([]);
+const practicetestlevel = ref('');
 
 // Load all exams
 const loadAllBaiThiThu = async () => {
@@ -33,6 +34,7 @@ const handleFormSubmit = async () => {
   formData.append('name', nameBaiThiThu.value);
   formData.append('file_excel', fileExcel.value);
   formData.append('file_image', fileImage.value);
+  formData.append('practicetestlevel', practicetestlevel.value);
 
   fileImageQuestions.value.forEach(file => {
     formData.append('file_image_question', file);
@@ -101,6 +103,7 @@ const openModal = () => {
   fileImage.value = null;
   fileImageQuestions.value = [];
   fileListening.value = [];
+  practicetestlevel.value = '';
 };
 
 const closeModal = () => {
@@ -114,7 +117,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="content" style="margin-left: 20%;">
+  <div class="content" style="margin-left: 15%;">
     <h3>Quản lý bài thi thử Toeic</h3>
     <button class="btn btn-success" @click="openModal">Thêm mới</button>
     <h4 class="info-message">{{ infoSuccess }}</h4>
@@ -157,6 +160,18 @@ onMounted(() => {
               <input v-model="nameBaiThiThu" type="text" class="form-control" />
             </div>
             <div class="form-group">
+              <label>Cấp độ: </label>
+              <select v-model="practicetestlevel" class="form-control">
+                <option value="350">350</option>
+                <option value="550">550</option>
+                <option value="750">750</option>
+                <option value="900">900</option>
+                <option value="955">955</option>
+                <option value="990">990</option>
+                <option value="990">990+</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Ảnh bài thi thử</label>
               <input type="file" @change="fileImage = $event.target.files[0]" class="form-control" />
             </div>
@@ -184,32 +199,131 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.content {
-  padding: 20px;
+/* Tổng thể */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
 }
 
+/* Nội dung chính */
+.content {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Tiêu đề */
+h3 {
+  font-size: 24px;
+  color: #4a90e2;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+h4.info-message {
+  color: #28a745;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+/* Button chính */
+.btn {
+  padding: 10px 15px;
+  font-size: 14px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #fff;
+  border: none;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Bảng dữ liệu */
 .table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 20px;
 }
 
 .table th,
 .table td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px 15px;
+  text-align: center;
 }
 
 .table th {
-  background-color: #f4f4f4;
-  text-align: left;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table tr:hover {
+  background-color: #e9ecef;
 }
 
 .image-preview {
-  max-width: 100px;
-  max-height: 100px;
+  max-width: 80px;
+  max-height: 80px;
   object-fit: cover;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Modal */
 .modal {
   display: flex;
   justify-content: center;
@@ -220,25 +334,72 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: 1050;
 }
 
 .modal-dialog {
   background: #fff;
-  border-radius: 5px;
-  width: 500px;
+  border-radius: 8px;
+  width: 600px;
   padding: 20px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.3s ease-in-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
   margin-bottom: 20px;
+}
+
+.modal-header h4 {
+  font-size: 18px;
+  color: #333;
+}
+
+.modal-header .close {
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+}
+
+.modal-header .close:hover {
+  color: #000;
 }
 
 .modal-body .form-group {
   margin-bottom: 15px;
+}
+
+.modal-body label {
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-body input[type="file"],
+.modal-body input[type="text"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 5px;
 }
 
 .modal-footer {
@@ -249,5 +410,7 @@ onMounted(() => {
 
 .modal-footer .btn {
   padding: 8px 20px;
+  font-size: 14px;
 }
 </style>
+

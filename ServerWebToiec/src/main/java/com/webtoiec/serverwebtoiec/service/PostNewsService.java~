@@ -1,0 +1,168 @@
+package com.webtoiec.serverwebtoiec.service;
+
+import com.webtoiec.serverwebtoiec.entities.PostNews;
+import com.webtoiec.serverwebtoiec.repository.PostNewsRepo;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
+import org.springframework.stereotype.Service;
+
+@Service
+public class PostNewsService implements PostNewsRepo {
+
+  @Override
+  public void flush() {
+
+  }
+
+  @Override
+  public <S extends PostNews> S saveAndFlush(S entity) {
+    return null;
+  }
+
+  @Override
+  public <S extends PostNews> List<S> saveAllAndFlush(Iterable<S> entities) {
+    return List.of();
+  }
+
+  @Override
+  public void deleteAllInBatch(Iterable<PostNews> entities) {
+
+  }
+
+  @Override
+  public void deleteAllByIdInBatch(Iterable<Integer> integers) {
+
+  }
+
+  @Override
+  public void deleteAllInBatch() {
+
+  }
+
+  @Override
+  public PostNews getOne(Integer integer) {
+    return null;
+  }
+
+  @Override
+  public PostNews getById(Integer integer) {
+    return null;
+  }
+
+  @Override
+  public PostNews getReferenceById(Integer integer) {
+    return null;
+  }
+
+  @Override
+  public <S extends PostNews> Optional<S> findOne(Example<S> example) {
+    return Optional.empty();
+  }
+
+  @Override
+  public <S extends PostNews> List<S> findAll(Example<S> example) {
+    return List.of();
+  }
+
+  @Override
+  public <S extends PostNews> List<S> findAll(Example<S> example, Sort sort) {
+    return List.of();
+  }
+
+  @Override
+  public <S extends PostNews> Page<S> findAll(Example<S> example, Pageable pageable) {
+    return null;
+  }
+
+  @Override
+  public <S extends PostNews> long count(Example<S> example) {
+    return 0;
+  }
+
+  @Override
+  public <S extends PostNews> boolean exists(Example<S> example) {
+    return false;
+  }
+
+  @Override
+  public <S extends PostNews, R> R findBy(Example<S> example,
+      Function<FetchableFluentQuery<S>, R> queryFunction) {
+    return null;
+  }
+
+  @Override
+  public <S extends PostNews> S save(S entity) {
+    return null;
+  }
+
+  @Override
+  public <S extends PostNews> List<S> saveAll(Iterable<S> entities) {
+    return List.of();
+  }
+
+  @Override
+  public Optional<PostNews> findById(Integer integer) {
+    return Optional.empty();
+  }
+
+  @Override
+  public boolean existsById(Integer integer) {
+    return false;
+  }
+
+  @Override
+  public List<PostNews> findAll() {
+    return List.of();
+  }
+
+  @Override
+  public List<PostNews> findAllById(Iterable<Integer> integers) {
+    return List.of();
+  }
+
+  @Override
+  public long count() {
+    return 0;
+  }
+
+  @Override
+  public void deleteById(Integer integer) {
+
+  }
+
+  @Override
+  public void delete(PostNews entity) {
+
+  }
+
+  @Override
+  public void deleteAllById(Iterable<? extends Integer> integers) {
+
+  }
+
+  @Override
+  public void deleteAll(Iterable<? extends PostNews> entities) {
+
+  }
+
+  @Override
+  public void deleteAll() {
+
+  }
+
+  @Override
+  public List<PostNews> findAll(Sort sort) {
+    return List.of();
+  }
+
+  @Override
+  public Page<PostNews> findAll(Pageable pageable) {
+    return null;
+  }
+}

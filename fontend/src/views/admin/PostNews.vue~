@@ -1,0 +1,260 @@
+<template>
+  <div class="container mt-5" style="margin-left: 20%;">
+    <h1 class="text-center mb-4">Quản lý Tin tức</h1>
+
+    <!-- Nút để mở popup -->
+    <button style="margin-bottom: 10px;" class="btn btn-primary mb-3" @click="openAddModal">Thêm Bài Viết Mới</button>
+
+    <!-- Thông báo -->
+    <div v-if="infoMessage" class="alert alert-success">{{ infoMessage }}</div>
+    <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+    <!-- Bảng hiển thị danh sách bài viết -->
+    <table class="table table-bordered">
+      <thead class="thead-dark">
+      <tr>
+        <th>#</th>
+        <th>Tiêu đề</th>
+        <th>Nội dung</th>
+        <th>Ảnh</th>
+        <th>Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(news, index) in newsList" :key="news.postid">
+        <td>{{ index + 1 }}</td>
+        <td>{{ news.title }}</td>
+        <td v-html="renderMarkdown(news.content)"></td>
+        <td>
+          <img
+              v-if="news.postimage"
+              :src="news.postimage"
+              alt="Post Image"
+              class="img-thumbnail"
+              style="width: 100px; height: 100px;"
+          />
+        </td>
+        <td>
+          <button style="margin-right: 10px;" class="btn btn-warning btn-sm me-2" @click="editNews(news)">Chỉnh sửa</button>
+          <button class="btn btn-danger btn-sm" @click="deleteNews(news.postid)">Xóa</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Modal Thêm/Chỉnh sửa bài viết -->
+    <div
+        class="modal fade show"
+        tabindex="-1"
+        role="dialog"
+        v-if="showAddModal"
+        style="display: block; background: rgba(0, 0, 0, 0.5);"
+    >
+      <div class="modal-dialog" style="margin-left: 30%; margin-top: 15%;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {{ currentNews.postid ? "Chỉnh sửa Tin tức" : "Thêm Bài Viết Mới" }}
+            </h5>
+            <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Tiêu đề</label>
+              <input
+                  type="text"
+                  class="form-control"
+                  v-model="currentNews.title"
+                  placeholder="Nhập tiêu đề"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ảnh bài viết</label>
+              <input
+                  type="file"
+                  @change="handleFileChange"
+                  class="form-control"
+                  accept="image/*"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nội dung</label>
+              <VueEasymde v-model="currentNews.content" :options="markdownOptions" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="closeModal">Đóng</button>
+            <button
+                class="btn btn-primary"
+                @click="currentNews.postid ? updateNews() : addNews()"
+            >
+              {{ currentNews.postid ? "Cập nhật" : "Thêm Mới" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted, ref } from "vue";
+import { marked } from "marked";
+import VueEasymde from "vue-easymde";
+import "easymde/dist/easymde.min.css";
+import axios from "axios";
+
+// Dữ liệu và trạng thái
+const newsList = ref([]);
+const showAddModal = ref(false);
+const infoMessage = ref("");
+const errorMessage = ref("");
+const currentNews = ref({
+  postid: null,
+  title: "",
+  postimage: null,
+  content: "",
+});
+
+// Tùy chỉnh Markdown
+const markdownOptions = {
+  spellChecker: false,
+  placeholder: "Nhập nội dung bài viết...",
+};
+
+// Chuyển đổi Markdown sang HTML
+const renderMarkdown = (markdown) => marked(markdown);
+
+// Đặt lại trạng thái bài viết
+const resetCurrentNews = () => {
+  currentNews.value = {
+    postid: null,
+    title: "",
+    postimage: null,
+    content: "",
+  };
+};
+
+// Đóng modal
+const closeModal = () => {
+  resetCurrentNews();
+  showAddModal.value = false;
+  infoMessage.value = "";
+  errorMessage.value = "";
+};
+
+// Mở modal thêm bài viết
+const openAddModal = () => {
+  resetCurrentNews();
+  showAddModal.value = true;
+};
+
+// Xử lý tệp tin
+const handleFileChange = (event) => {
+  currentNews.value.postimage = event.target.files[0];
+};
+
+// Tải danh sách bài viết
+const loadNews = async () => {
+  try {
+    const { data } = await axios.get("http://localhost:8080/api/admin/news/list");
+    newsList.value = data.map((news) => ({
+      postid: news.postid,
+      title: news.title,
+      content: news.content,
+      postimage: `http://localhost:8080${news.image}`,
+    }));
+  } catch (error) {
+    console.error("Lỗi tải danh sách bài viết:", error);
+  }
+};
+
+// Thêm bài viết
+const addNews = async () => {
+  const formData = new FormData();
+  formData.append("id", 1); // Thay bằng ID người dùng thực tế
+  formData.append("title", currentNews.value.title);
+  formData.append("content", currentNews.value.content);
+  if (currentNews.value.postimage) {
+    formData.append("postimage", currentNews.value.postimage);
+  }
+
+  try {
+    await axios.post("http://localhost:8080/api/admin/news/createPostNews", formData);
+    infoMessage.value = "Thêm bài viết thành công!";
+    closeModal();
+    loadNews();
+  } catch (error) {
+    errorMessage.value = "Lỗi khi thêm bài viết!";
+    console.error(error);
+  }
+};
+
+// Cập nhật bài viết
+const updateNews = async () => {
+  const formData = new FormData();
+  formData.append("postid", currentNews.value.postid);
+  formData.append("title", currentNews.value.title);
+  formData.append("content", currentNews.value.content);
+  if (currentNews.value.postimage) {
+    formData.append("postimage", currentNews.value.postimage);
+  }
+
+  try {
+    await axios.put("http://localhost:8080/api/admin/news/updatePostNews", formData);
+    infoMessage.value = "Cập nhật bài viết thành công!";
+    closeModal();
+    loadNews();
+  } catch (error) {
+    errorMessage.value = "Lỗi khi cập nhật bài viết!";
+    console.error(error);
+  }
+};
+
+// Xóa bài viết
+const deleteNews = async (postid) => {
+  if (confirm("Bạn có chắc chắn muốn xóa bài viết này không?")) {
+    try {
+      await axios.delete(`http://localhost:8080/api/admin/news/delete/${postid}`);
+      infoMessage.value = "Xóa bài viết thành công!";
+      loadNews();
+    } catch (error) {
+      errorMessage.value = "Lỗi khi xóa bài viết!";
+      console.error(error);
+    }
+  }
+};
+
+// Sửa bài viết
+const editNews = (news) => {
+  currentNews.value = {
+    postid: news.postid,
+    title: news.title,
+    content: news.content,
+    postimage: null, // Không hiển thị tệp cũ, chỉ thay đổi khi tải ảnh mới
+  };
+  showAddModal.value = true;
+};
+
+// Tải dữ liệu khi khởi động
+onMounted(() => {
+  loadNews();
+});
+</script>
+
+<style scoped>
+.table th,
+.table td {
+  vertical-align: middle;
+}
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-body {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+</style>

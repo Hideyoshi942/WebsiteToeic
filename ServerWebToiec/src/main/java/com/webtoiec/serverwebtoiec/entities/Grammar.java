@@ -23,6 +23,7 @@ public class Grammar {
 
   private String grammarcontenthtml;
 
+  @Column(columnDefinition = "nvarchar(max)")
   private String grammarcontentmarkdown;
 
   public Grammar() {

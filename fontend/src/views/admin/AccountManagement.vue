@@ -105,7 +105,7 @@ const addNewAccount = async () => {
 </script>
 
 <template>
-  <div class="col-md-9 animated bounce"  style="float: right; margin-right: 50px;">
+  <div class="col-md-9 animated bounce"  style="float: right; margin-right: 70px;">
     <h3 class="page-header">Quản lý Tài khoản</h3>
 
     <button class="btn btn-success btnThemTaiKhoan" @click="openAddAccountModal">Thêm mới tài khoản</button>

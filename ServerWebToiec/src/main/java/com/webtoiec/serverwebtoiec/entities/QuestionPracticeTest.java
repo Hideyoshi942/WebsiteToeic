@@ -23,7 +23,7 @@ public class QuestionPracticeTest {
 
   private String questionpracticetestanswercorrect;
 
-  private String questionpracticetestansweruser;
+  private String questionpracticetestlevel;
 
   private String questionpracticetestimage;
 
@@ -57,7 +57,7 @@ public class QuestionPracticeTest {
         "questionpracticetestid=" + questionpracticetestid +
         ", questionpracticetestaudio='" + questionpracticetestaudio + '\'' +
         ", questionpracticetestanswercorrect='" + questionpracticetestanswercorrect + '\'' +
-        ", questionpracticetestansweruser='" + questionpracticetestansweruser + '\'' +
+        ", questionpracticetestlevel='" + questionpracticetestlevel + '\'' +
         ", questionpracticetestimage='" + questionpracticetestimage + '\'' +
         ", questionpracticetestnumber=" + questionpracticetestnumber +
         ", questionpracticetestanswer1='" + questionpracticetestanswer1 + '\'' +
@@ -94,12 +94,12 @@ public class QuestionPracticeTest {
     this.questionpracticetestanswercorrect = questionpracticetestanswercorrect;
   }
 
-  public String getQuestionpracticetestansweruser() {
-    return questionpracticetestansweruser;
+  public String getQuestionpracticetestlevel() {
+    return questionpracticetestlevel;
   }
 
-  public void setQuestionpracticetestansweruser(String questionpracticetestansweruser) {
-    this.questionpracticetestansweruser = questionpracticetestansweruser;
+  public void setQuestionpracticetestlevel(String questionpracticetestlevel) {
+    this.questionpracticetestlevel = questionpracticetestlevel;
   }
 
   public String getQuestionpracticetestimage() {
@@ -175,7 +175,7 @@ public class QuestionPracticeTest {
   }
 
   public QuestionPracticeTest(int questionpracticetestid, String questionpracticetestaudio,
-      String questionpracticetestanswercorrect, String questionpracticetestansweruser,
+      String questionpracticetestanswercorrect, String questionpracticetestlevel,
       String questionpracticetestimage, int questionpracticetestnumber,
       String questionpracticetestanswer1, String questionpracticetestanswer2,
       String questionpracticetestanswer3, String questionpracticetestanswer4,
@@ -184,7 +184,7 @@ public class QuestionPracticeTest {
     this.questionpracticetestid = questionpracticetestid;
     this.questionpracticetestaudio = questionpracticetestaudio;
     this.questionpracticetestanswercorrect = questionpracticetestanswercorrect;
-    this.questionpracticetestansweruser = questionpracticetestansweruser;
+    this.questionpracticetestlevel = questionpracticetestlevel;
     this.questionpracticetestimage = questionpracticetestimage;
     this.questionpracticetestnumber = questionpracticetestnumber;
     this.questionpracticetestanswer1 = questionpracticetestanswer1;

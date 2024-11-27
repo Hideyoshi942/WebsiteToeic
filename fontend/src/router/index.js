@@ -39,6 +39,9 @@ import ListReadingTest from "@/views/examtoeic/ListReadingTest.vue";
 import ListListeningTest from "@/views/examtoeic/ListListeningTest.vue";
 import ListPracticeTest from "@/views/examtoeic/ListPracticeTest.vue";
 import ResultTest from "@/views/ResultTest.vue";
+import PostNews from "@/views/admin/PostNews.vue";
+import NewsDetails from "@/views/NewsDetails.vue";
+import DetailResultTest from "@/views/DetailResultTest.vue";
 
 const routes = [
   {
@@ -52,7 +55,8 @@ const routes = [
       { path: 'exams', name: 'Exams', component: ExamView},
       { path: 'exam-detail', name: 'ExamDetail', component: ExamDetailView},
       { path: 'base', name: 'Base', component: BaseView},
-      { path: 'news', name: 'News', component: NewsView},
+      { path: 'news', name: 'News', component: NewsView, props: true},
+      { path: 'newsdetails/:id', name: 'NewsDetails', component: NewsDetails, props: true},
       { path: 'homepage', name: 'HomePage', component: HomePage},
       { path: 'forgetpassword', name: 'ForgetPassword', component: ForgetPassword},
 
@@ -72,6 +76,7 @@ const routes = [
     children: [
       { path: 'infoperson', name: 'InfoPerson', component: InfoPerson, meta: {requiresAuth: true, role: 2}},
       { path: 'resulttest', name: 'ResultTest', component: ResultTest, meta: {requiresAuth: true, role: 2}},
+      { path: 'detailresulttest/:id', name: 'DetailResultTest', component: DetailResultTest, meta: {requiresAuth: true, role: 2, props: true}},
     ]
   },
   {
@@ -102,6 +107,7 @@ const routes = [
     path: '/admin',
     component: AdminHomePage,
     children: [
+      {path: 'postnews', name: "PostNews", component: PostNews, meta: {requiresAuth: true, role: 1}},
       {path: 'listeningmanagement', name: "ListeningManagement", component: ListeningManagement, meta: {requiresAuth: true, role: 1}},
       {path: 'readingmanagement', name: "ReadingManagement", component: ReadingManagement, meta: {requiresAuth: true, role: 1}},
       {path: 'practicetestmanagement', name: "PracticeTestManagement", component: PracticeTestManagement, meta: {requiresAuth: true, role: 1}},

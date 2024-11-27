@@ -51,13 +51,13 @@ export default {
     },
     initMap() {
       const map = new window.google.maps.Map(document.getElementById("map"), {
-        center: { lat: 21.0285, lng: 105.8542 },
+        center: {lat: 21.0285, lng: 105.8542},
         zoom: 13,
       });
 
       this.locations.forEach((location) => {
         new window.google.maps.Marker({
-          position: { lat: location.lat, lng: location.lng },
+          position: {lat: location.lat, lng: location.lng},
           map: map,
           title: location.title,
         });

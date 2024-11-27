@@ -158,7 +158,7 @@ public class AdminListeningAPI {
       // Kiểm tra giá trị null cho questionlisteningaudio
       String audioPath = questionListening.getQuestionlisteningaudio();
       if (audioPath != null && !audioPath.isEmpty()) {
-        map.put("questionlisteningaudio", "/api/admin/listening/audio/" + URLEncoder.encode(audioPath, StandardCharsets.UTF_8));
+        map.put("questionlisteningaudio", "/api/admin/listening/audio/" + URLEncoder.encode(audioPath, StandardCharsets.UTF_8) + ".mp3");
       } else {
         map.put("questionlisteningaudio", null);
       }

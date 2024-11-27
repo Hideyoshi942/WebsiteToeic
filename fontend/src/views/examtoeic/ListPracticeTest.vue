@@ -6,6 +6,22 @@
         <p class="text-muted">Danh sách các bài thi thử, hãy chọn bài thi để bắt đầu!</p>
       </div>
 
+      <!-- Bộ lọc -->
+      <div class="d-flex justify-content-center mb-4 row">
+        <div class="form-group me-2 col-sm-5">
+          <select class="form-control" v-model="levelFilter">
+            <option value="">Tất cả cấp độ</option>
+            <option :value="350">Beginner: dưới 350 điểm</option>
+            <option :value="550">Elementary: 350 – 550 điểm</option>
+            <option :value="750">Pre-Intermediate: 550 – 750 điểm</option>
+            <option :value="900">Intermediate: 750 – 900 điểm</option>
+            <option :value="955">Upper-Intermediate: 900 – 955 điểm</option>
+            <option :value="990">Advanced: 955 – 990 điểm</option>
+          </select>
+        </div>
+        <button class="btn btn-primary col-sm-2" @click="applyFilters">Duyệt</button>
+      </div>
+
       <!-- Trạng thái đang tải -->
       <div v-if="isLoading" class="text-center">
         <p>Đang tải danh sách bài thi...</p>
@@ -16,8 +32,8 @@
         {{ errorMessage }}
       </div>
 
-      <!-- Danh sách các bài thi ngữ pháp -->
-      <div v-if="!isLoading && practiceTestList.length > 0" class="row mt-4" style="margin-bottom: 20px;">
+      <!-- Danh sách các bài thi -->
+      <div v-if="!isLoading && practiceTestList.length > 0" class="row mt-4">
         <div
             v-for="(practicetest) in practiceTestList"
             :key="practicetest.practicetestid"
@@ -27,7 +43,7 @@
             <img :src="practicetest.practicetestimage" alt="Grammar Image" class="card-img-left" />
             <div class="card-body text-start">
               <h5 class="card-title text-primary fw-bold">{{ practicetest.practicetestname }}</h5>
-              <p class="card-text text-muted">Thi thử về chủ đề "{{ practicetest.practicetestname }}".</p>
+              <p class="card-text text-muted">Cấp độ: {{ practicetest.practicetestlevel }}</p>
               <h5 class="card-title text-muted">Thời gian: 30 phút</h5>
               <button
                   class="btn btn-primary"
@@ -39,38 +55,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Thông báo không tìm thấy bài thi -->
+      <div v-if="!isLoading && practiceTestList.length === 0" class="text-center mt-4">
+        <p>Không tìm thấy bài thi nào phù hợp.</p>
+      </div>
     </main>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
 // Biến trạng thái
-const practiceTestList = ref([]); // Danh sách bài thi
-const errorMessage = ref(""); // Lỗi khi tải dữ liệu
+const originalPracticeTestList = ref([]); // Dữ liệu gốc từ API
+const practiceTestList = ref([]); // Danh sách bài thi hiển thị
+const errorMessage = ref(""); // Thông báo lỗi
 const isLoading = ref(false); // Trạng thái đang tải dữ liệu
+const levelFilter = ref(""); // Bộ lọc cấp độ
 
-// Tải danh sách bài thi ngữ pháp
-const loadGrammarLessons = async () => {
-  isLoading.value = true; // Bắt đầu tải
+// Hàm tải dữ liệu từ API
+const loadPracticeTests = async () => {
+  isLoading.value = true; // Bắt đầu tải dữ liệu
+  errorMessage.value = ""; // Xóa thông báo lỗi cũ
+
   try {
-    // Gọi API
-    const response = await axios.get(
-        "http://localhost:8080/api/admin/practicetest/loadpracticetest" // Đường dẫn API
-    );
+    const response = await axios.get("http://localhost:8080/api/admin/practicetest/loadpracticetest");
 
-    // Kiểm tra nếu API trả về dữ liệu
     if (response.data && response.data.length > 0) {
-      // Chuyển đổi dữ liệu sang định dạng cần thiết
-      practiceTestList.value = response.data.map((practicetest) => ({
-        practicetestid: practicetest.practicetestid,
-        practicetestname: practicetest.practicetestname,
-        practicetestimage: `http://localhost:8080${practicetest.practicetestimage}`, // Đường dẫn ảnh
+      // Lưu dữ liệu ban đầu
+      originalPracticeTestList.value = response.data.map((test) => ({
+        practicetestid: test.practicetestid,
+        practicetestname: test.practicetestname,
+        practicetestlevel: test.practicetestlevel,
+        practicetestimage: `http://localhost:8080${test.practicetestimage}`,
       }));
+      console.log(originalPracticeTestList.value);
+
+      // Hiển thị toàn bộ danh sách ban đầu
+      practiceTestList.value = [...originalPracticeTestList.value];
     } else {
-      // Không có dữ liệu
       errorMessage.value = "Không có bài thi thử nào.";
     }
   } catch (error) {
@@ -81,26 +105,32 @@ const loadGrammarLessons = async () => {
   }
 };
 
+// Hàm áp dụng bộ lọc
+const applyFilters = () => {
+  if (levelFilter.value) {
+    // Lọc danh sách dựa trên cấp độ
+    practiceTestList.value = originalPracticeTestList.value.filter(
+        (test) => test.practicetestlevel === parseInt(levelFilter.value)
+    );
+  } else {
+    // Hiển thị lại toàn bộ danh sách
+    practiceTestList.value = [...originalPracticeTestList.value];
+  }
+};
+
 // Tải dữ liệu khi khởi tạo
 onMounted(() => {
-  loadGrammarLessons();
+  loadPracticeTests();
 });
 </script>
-
 <style scoped>
-/* Định dạng container */
+/* Container */
 .container {
   max-width: 800px;
   margin: auto;
 }
 
-/* Định dạng container */
-.container {
-  max-width: 800px;
-  margin: auto;
-}
-
-/* Định dạng card */
+/* Card */
 .card {
   display: flex;
   flex-direction: row;
@@ -109,7 +139,7 @@ onMounted(() => {
   border-radius: 10px;
   transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
   padding: 10px;
-  gap: 20px; /* Khoảng cách giữa ảnh và nội dung */
+  gap: 20px;
 }
 
 .card:hover {
@@ -117,18 +147,16 @@ onMounted(() => {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Định dạng hình ảnh bên trái */
 .card-img-left {
   width: 150px;
   height: 150px;
   object-fit: cover;
   border-radius: 10px;
-  flex-shrink: 0; /* Ngăn hình ảnh bị co lại */
+  flex-shrink: 0;
 }
 
-/* Nội dung bên phải */
 .card-body {
-  flex: 1; /* Đảm bảo nội dung chiếm phần còn lại của card */
+  flex: 1;
 }
 
 .card-title {
@@ -143,7 +171,7 @@ onMounted(() => {
   margin-bottom: 15px;
 }
 
-/* Nút bắt đầu thi */
+/* Button */
 .btn {
   font-size: 14px;
   font-weight: bold;
@@ -161,61 +189,7 @@ onMounted(() => {
   background-color: #0056b3;
 }
 
-/* Khoảng cách giữa các phần tử */
-.row > .col-12 {
-  margin-bottom: 20px;
-}
-
-
-/* Định dạng nút */
-.btn {
-  font-size: 14px;
-  font-weight: bold;
-  padding: 10px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  border: none;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-/* Khoảng cách giữa các card */
-.row > .col-12 {
-  margin-bottom: 20px;
-}
-
-/* Modal */
-.modal-content {
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  border-bottom: 2px solid #007bff;
-  padding: 20px;
-  background-color: #f8f9fa;
-}
-
-.modal-title {
-  font-size: 20px;
-  color: #007bff;
-}
-
-.modal-body {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 20px;
-  font-size: 16px;
-  color: #6c757d;
-}
-
-/* Thông báo lỗi */
+/* Alert */
 .alert {
   font-size: 16px;
   font-weight: bold;

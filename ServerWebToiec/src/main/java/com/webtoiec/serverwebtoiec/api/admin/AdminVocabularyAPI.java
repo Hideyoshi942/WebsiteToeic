@@ -262,8 +262,8 @@ public class AdminVocabularyAPI {
   public List<String> addVocabulary(@RequestParam("file_excel_lesson") MultipartFile file_excel_lesson,
       @RequestParam("file_imageVocab") MultipartFile file_imageVocab,
       @RequestParam("namevocab") String namevocab,
-//      @RequestParam("file_image_lessonVocab") MultipartFile file_image_lessonVocab,
-//      @RequestParam("file_listening") MultipartFile file_listening,
+      @RequestParam("file_image_lessonVocab") MultipartFile[] file_image_lessonVocab,
+      @RequestParam("file_listening") MultipartFile[] file_listening,
       @RequestParam("file_questionvocab") MultipartFile file_questionvocab) {
     List<String> response = new ArrayList<String>();
     String rootDirectory = Paths.get("src/main").toAbsolutePath().toString();
@@ -281,13 +281,16 @@ public class AdminVocabularyAPI {
       Path pathImage = Paths.get(rootDirectory + "/resources/static/img/vocabulary/" + "vocab." + vocabulary.getVocabularyid() + "." + file_imageVocab.getOriginalFilename());
       file_imageVocab.transferTo(new File(pathImage.toString()));
 
-//      // Audio vocab lesson
-//      Path pathAudio = Paths.get(rootDirectory + "/resources/static/audio/vocabulary/" + "vocab." + vocabulary.getVocabularyid() + "." + file_listening.getOriginalFilename());
-//      file_listening.transferTo(new File(pathAudio.toString()));
-
+      // Audio vocab lesson
+      for (MultipartFile single_listening : file_listening) {
+        Path pathImageQuestion = Paths.get(rootDirectory + "/resources/static/audio/vocabulary/" + vocabulary.getVocabularyid() + "." + single_listening.getOriginalFilename());
+        single_listening.transferTo(new File(pathImageQuestion.toString()));
+      }
       // Image vocab lesson
-//      Path pathImageLesson = Paths.get(rootDirectory + "/resources/static/img/vocabulary/lesson/" + "vocab." + vocabulary.getVocabularyid() + "." + file_image_lessonVocab.getOriginalFilename());
-//      file_image_lessonVocab.transferTo(new File(pathImageLesson.toString()));
+      for (MultipartFile single_image : file_image_lessonVocab) {
+        Path pathImageQuestion = Paths.get(rootDirectory + "/resources/static/img/vocabulary/" + vocabulary.getVocabularyid() + "." + single_image.getOriginalFilename());
+        single_image.transferTo(new File(pathImageQuestion.toString()));
+      }
 
       // Excel question vocab
       Path pathExcelQuestion = Paths.get(rootDirectory + "/resources/static/excel/vocabulary/question/" + "vocab." + vocabulary.getVocabularyid() + "." + file_questionvocab.getOriginalFilename());

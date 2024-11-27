@@ -13,6 +13,7 @@ const loadResults = async () => {
     isLoading.value = true;
     const response = await axios.get("http://localhost:8080/api/admin/result/showResult");
     results.value = response.data; // Gắn dữ liệu vào biến `results`
+    console.log(results.value);
   } catch (err) {
     error.value = "Lỗi khi tải dữ liệu kết quả. Vui lòng thử lại!";
     console.error(err);
@@ -54,6 +55,8 @@ onMounted(() => {
           <th>Số Câu Đúng</th>
           <th>Số Câu Sai</th>
           <th>Thời Gian</th>
+          <th>Nhận xét</th>
+          <th>Kết quả chi tiết</th>
         </tr>
         </thead>
         <tbody>
@@ -66,6 +69,14 @@ onMounted(() => {
           <td>{{ result.resulttestnumbercorrect }}</td>
           <td>{{ result.resulttestnumberincorrect }}</td>
           <td>{{ new Date(result.resulttesttime).toLocaleString() }}</td>
+          <td>{{ result.resulttestadvise}}</td>
+          <td>
+            <a
+                @click="$router.push({ name: 'DetailResultTest', params: { id: result.resulttestid } })"
+            >
+              Xem chi tiết
+            </a>
+          </td>
         </tr>
         </tbody>
       </table>

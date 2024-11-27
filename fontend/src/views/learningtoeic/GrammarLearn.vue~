@@ -26,12 +26,6 @@ const loadGrammarLessons = async () => {
   }
 };
 
-// Open modal and display lesson details
-const viewLessonDetails = (lesson) => {
-  selectedLesson.value = lesson;
-  isModalVisible.value = true;
-};
-
 // Close modal
 const closeModal = () => {
   isModalVisible.value = false;
@@ -46,7 +40,7 @@ onMounted(() => {
 <template>
   <div class="d-flex flex-column min-vh-100">
     <AppHeader></AppHeader>
-    <main class="flex-grow-1 container mt-5">
+    <main class="flex-grow-1 container mt-5" style=" margin-bottom: 20px;">
       <!-- Title -->
       <div class="text-center mb-4">
         <h3 class="page-header text-primary fw-bold">Danh sách bài học ngữ pháp</h3>

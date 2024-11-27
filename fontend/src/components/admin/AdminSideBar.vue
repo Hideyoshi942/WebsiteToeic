@@ -17,7 +17,12 @@ function navigate(path) {
           </div>
         </div>
         <ul class="nav navbar-nav side-bar">
-          <li class="side-bar tmargin">
+          <li class="side-bar">
+            <a @click.prevent="navigate('/admin/postnews')">
+              <span class="glyphicon glyphicon-book">&nbsp;</span>Quản lý Tin tức</a>
+          </li>
+
+          <li class="side-bar">
             <a @click.prevent="navigate('/admin/listeningmanagement')">
               <span class="glyphicon glyphicon-shopping-cart">&nbsp;</span>Quản lý Bài Nghe</a>
           </li>

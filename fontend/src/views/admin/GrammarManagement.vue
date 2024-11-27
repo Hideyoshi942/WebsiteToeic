@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-5" style="margin-left: 25%;">
+  <div class="container mt-5" style="margin-left: 20%;">
     <!-- Tiêu đề và nút thêm mới -->
     <div>
       <h3 class="page-header text-primary">Quản lý bài hướng dẫn Grammar</h3>
@@ -50,7 +50,7 @@
             <form @submit.prevent="saveGrammar">
               <!-- Nhập tên bài Grammar -->
               <div class="mb-3">
-                <label for="grammarName" class="form-label">Tên bài Grammar</label>
+                <label for="grammarName" class="form-label">Grammar</label>
                 <input
                     type="text"
                     id="grammarName"
@@ -70,6 +70,17 @@
                     @change="handleFileChange($event, 'image')"
                     class="form-control"
                     accept="image/*"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="grammarName" class="form-label">Tên bài Grammar</label>
+                <input
+                    type="text"
+                    id="grammarName"
+                    v-model="currentGrammar.contenthtml"
+                    class="form-control"
+                    placeholder="Nhập tên bài Grammar"
+                    required
                 />
               </div>
 
@@ -107,7 +118,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import VueEasymde from 'vue-easymde';
+import VueEasymde from "vue-easymde";
+import "easymde/dist/easymde.min.css";
 import axios from 'axios';
 
 // Biến trạng thái
@@ -116,6 +128,7 @@ const currentGrammar = ref({
   id: null,
   name: '',
   image: null,
+  contenthtml: '',
   contentMarkdown: '',
   file: null,
 });
@@ -123,7 +136,6 @@ const isModalVisible = ref(false);
 const modalTitle = ref('Thêm mới bài Grammar');
 const infoMessage = ref('');
 const errorMessage = ref('');
-
 // Tải danh sách Grammar
 const loadGrammars = async () => {
   try {
@@ -158,6 +170,7 @@ const resetCurrentGrammar = () => {
     id: null,
     name: '',
     image: null,
+    contenthtml: '',
     contentMarkdown: '',
     file: null,
   };
@@ -178,7 +191,7 @@ const saveGrammar = async () => {
   const formData = new FormData();
   formData.append('grammarname', currentGrammar.value.name);
   formData.append('grammarimage', currentGrammar.value.image);
-  formData.append('grammarcontenthtml', currentGrammar.value.contentMarkdown);
+  formData.append('grammarcontenthtml', currentGrammar.value.contenthtml);
   formData.append('grammarcontentmarkdown', currentGrammar.value.contentMarkdown);
   formData.append('file_questiongrammar', currentGrammar.value.file);
 
@@ -242,25 +255,234 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Tổng thể */
 .container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.modal-dialog {
-  max-width: 600px;
+/* Tiêu đề */
+h3.page-header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4a90e2;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
 }
 
-.modal-body {
-  max-height: 400px;
-  overflow-y: auto;
+/* Button thêm mới */
+.btn-success {
+  font-size: 16px;
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
 
+.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Thông báo */
+.alert {
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+/* Bảng */
+.table {
+  width: 100%;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table th,
+.table td {
+  text-align: center;
+  padding: 12px;
+}
+
+.table th {
+  background-color: #4a90e2;
+  color: white;
+  font-weight: bold;
+}
+
+.table td {
+  border-bottom: 1px solid #ddd;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Ảnh thumbnail */
 .img-thumbnail {
-  width: 80px;
+  width: 100px;
   height: auto;
   border: 1px solid #ddd;
   padding: 5px;
   border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Nút hành động */
+.btn-warning {
+  background-color: #ffc107;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Modal */
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  overflow-y: auto;
+}
+
+.modal-dialog {
+  max-width: 600px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.3s ease-in-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-header h5 {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+}
+
+.modal-header .btn-close {
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.modal-header .btn-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modal-body label {
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-body .form-control {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 5px;
+  transition: border-color 0.3s ease;
+}
+
+.modal-body .form-control:focus {
+  border-color: #4a90e2;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+  border-top: 1px solid #ddd;
+  gap: 10px;
+}
+
+.modal-footer .btn {
+  padding: 8px 15px;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.modal-footer .btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #0056b3;
 }
 </style>
+

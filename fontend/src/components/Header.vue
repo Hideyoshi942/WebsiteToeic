@@ -40,7 +40,7 @@
       </div>
       <div id="header-main">
         <router-link to="/" id="logo" style="height: 100%;">
-          <img src="../../public/img/logo-01.png" style="height: 92px; width: 411px; object-fit: cover;" alt="Logo">
+          <img src="../../public/img/logo-01.png" style="height: 100%;" alt="Logo">
         </router-link>
         <div id="header-nav">
           <ul>

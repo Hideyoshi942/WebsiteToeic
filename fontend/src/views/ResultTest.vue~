@@ -13,6 +13,7 @@ const loadResults = async () => {
     isLoading.value = true;
     const response = await axios.get("http://localhost:8080/api/admin/result/showResult");
     results.value = response.data; // Gắn dữ liệu vào biến `results`
+    console.log(results.value);
   } catch (err) {
     error.value = "Lỗi khi tải dữ liệu kết quả. Vui lòng thử lại!";
     console.error(err);
@@ -54,18 +55,28 @@ onMounted(() => {
           <th>Số Câu Đúng</th>
           <th>Số Câu Sai</th>
           <th>Thời Gian</th>
+          <th>Nhận xét</th>
+          <th>Xem chi tiết</th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="(result, index) in results" :key="result.resulttestid">
           <td>{{ index + 1 }}</td>
           <td>{{ result.practicetestid.practicetestid }}</td>
-          <td>{{ result.username.username }}</td>
+          <td>{{ result.username }}</td>
           <td>{{ result.resulttestcorrectlistening }}</td>
           <td>{{ result.resulttestcorrectreading }}</td>
           <td>{{ result.resulttestnumbercorrect }}</td>
           <td>{{ result.resulttestnumberincorrect }}</td>
           <td>{{ new Date(result.resulttesttime).toLocaleString() }}</td>
+          <td>{{ result.resulttestadvise}}</td>
+          <td>
+            <a
+                @click="$router.push({ name: 'DetailResultTest', params: { id: result.resulttestid } })"
+            >
+              Xem chi tiết
+            </a>
+          </td>
         </tr>
         </tbody>
       </table>

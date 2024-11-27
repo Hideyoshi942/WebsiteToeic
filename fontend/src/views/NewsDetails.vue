@@ -1,0 +1,496 @@
+<template>
+  <div class="news-detail">
+    <div class="news-container">
+      <h1 class="news-title">{{ news.title }}</h1>
+      <img class="news-image" :src="news.postimage" alt="News Image" />
+      <div class="news-content" v-html="renderMarkdown(news.content)" style="margin: 10px;"></div>
+    </div>
+
+    <!-- Phần bình luận -->
+    <div class="comments-section">
+      <h2>Bình luận</h2>
+      <div class="comment-list">
+        <div v-for="(comment) in comments" :key="comment.commentid" class="comment-item">
+          <div class="comment-header">
+            <p class="comment-author">{{ comment.username }}</p>
+            <p class="comment-time">{{ formatDate(comment.createdDate) }}</p>
+          </div>
+          <p class="comment-content">{{ comment.content }}</p>
+          <img v-if="comment.image" :src="comment.image" alt="Comment Image" class="comment-image" />
+          <br>
+          <button class="btn-reply-comment" @click="openReply(comment)">
+            Trả lời
+          </button>
+
+          <!-- Form trả lời bình luận -->
+          <div v-if="replyTo === comment.commentid" class="reply-box">
+            <textarea
+                v-model="newReplyContent"
+                placeholder="Nhập câu trả lời..."
+                class="reply-input"
+            ></textarea>
+            <input type="file" @change="handleReplyFileChange" accept="image/*" class="reply-file-input" />
+            <button @click="submitReply(comment.commentid)" class="btn-submit-reply">Gửi trả lời</button>
+          </div>
+
+          <!-- Hiển thị bình luận trả lời -->
+          <div v-for="(reply) in comment.replies" :key="reply.commentid" class="reply-item" style="margin-top: 10px;">
+            <div class="reply-header">
+              <p class="reply-author">{{ reply.username }}</p>
+              <p class="reply-time">{{ formatDate(reply.createdDate) }}</p>
+            </div>
+            <p class="reply-content">{{ reply.content }}</p>
+            <img v-if="reply.image" :src="reply.image" alt="Reply Image" class="reply-image" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Thêm bình luận mới -->
+      <div class="add-comment">
+        <textarea
+            v-model="newCommentContent"
+            placeholder="Viết bình luận..."
+            class="comment-input"
+        ></textarea>
+        <input type="file" @change="handleFileChange" accept="image/*" class="comment-file-input" />
+        <button @click="addComment" class="btn-submit-comment">
+          Gửi bình luận
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+
+<script>
+import axios from "axios";
+import { marked } from "marked";
+
+const usertoeic = JSON.parse(localStorage.getItem("usertoeic"));
+
+export default {
+  name: "NewsDetail",
+  props: {
+    id: {
+      type: [String, Number],
+      required: true,
+    },
+  },
+  data() {
+    return {
+      news: {},
+      comments: [], // Danh sách bình luận
+      newCommentContent: "", // Nội dung bình luận mới
+      newReplyContent: "", // Nội dung trả lời bình luận
+      newCommentImage: null, // Ảnh của bình luận mới
+      newReplyImage: null, // Ảnh của trả lời bình luận
+      replyTo: null, // ID bình luận đang được trả lời
+    };
+  },
+  methods: {
+    // Lấy chi tiết bài viết
+    async fetchNewsDetail() {
+      try {
+        const { data } = await axios.get(`http://localhost:8080/api/admin/news/newsdetails/${this.id}`);
+        this.news = {
+          title: data.title,
+          content: data.content,
+          postimage: `http://localhost:8080${data.image}`,
+        };
+      } catch (error) {
+        console.error("Error fetching news detail:", error);
+      }
+    },
+
+    // Lấy danh sách bình luận
+    async fetchComments() {
+      try {
+        const { data } = await axios.get(
+            `http://localhost:8080/api/admin/news/listCommentPostNews/${this.id}`
+        );
+        this.comments = this.structureComments(data);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    },
+
+    // Cấu trúc lại bình luận
+    structureComments(comments) {
+      const map = {};
+      const roots = [];
+      comments.forEach((comment) => {
+        const item = {
+          commentid: comment.commentid,
+          username: comment.id,
+          content: comment.content,
+          image: comment.commentpostnewsimage
+              ? `http://localhost:8080${comment.commentpostnewsimage}`
+              : null,
+          createdDate: comment.createdate,
+          replies: [],
+        };
+        map[comment.commentid] = item;
+
+        if (comment.parenid === 0) {
+          roots.push(item);
+        } else if (map[comment.parenid]) {
+          map[comment.parenid].replies.push(item);
+        }
+      });
+      return roots;
+    },
+
+    // Mở form trả lời
+    openReply(comment) {
+      this.replyTo = comment.commentid;
+      this.newReplyContent = "";
+    },
+
+    // Xử lý file ảnh cho trả lời
+    handleReplyFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.newReplyImage = file;
+      }
+    },
+
+    // Xử lý file ảnh cho bình luận
+    handleFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.newCommentImage = file;
+      }
+    },
+
+    // Gửi bình luận mới
+    async addComment() {
+      if (!this.newCommentContent.trim()) {
+        alert("Vui lòng nhập nội dung bình luận!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("postid", this.id);
+      formData.append("id", usertoeic.id);
+      formData.append("content", this.newCommentContent);
+
+      if (this.newCommentImage) {
+        formData.append("commentpostnewsimage", this.newCommentImage);
+      }
+
+      try {
+        await axios.post(
+            "http://localhost:8080/api/admin/news/createCommentPostNews",
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            }
+        );
+
+        this.newCommentContent = "";
+        this.newCommentImage = null;
+        this.fetchComments();
+      } catch (error) {
+        console.error("Error adding comment:", error);
+      }
+    },
+
+    // Gửi trả lời bình luận
+    async submitReply(parentId) {
+      if (!this.newReplyContent.trim()) {
+        alert("Vui lòng nhập nội dung trả lời!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("postid", this.id);
+      formData.append("id", usertoeic.id);
+      formData.append("content", this.newReplyContent);
+      formData.append("commentid", parentId);
+
+      if (this.newReplyImage) {
+        formData.append("commentpostnewsimage", this.newReplyImage);
+      }
+
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]); // Kiểm tra các giá trị trong FormData
+      }
+
+      try {
+        await axios.post(
+            "http://localhost:8080/api/admin/news/replyCommentPostNews",
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            }
+        );
+
+        this.newReplyContent = "";
+        this.newReplyImage = null;
+        this.replyTo = null;
+        this.fetchComments();
+      } catch (error) {
+        console.error("Error replying to comment:", error);
+      }
+    },
+
+    formatDate(date) {
+      const d = new Date(date);
+      return d.toLocaleString();
+    },
+
+    renderMarkdown(markdown) {
+      return marked(markdown || "");
+    },
+  },
+  mounted() {
+    if (!this.id) {
+      console.error("Missing required param 'id'");
+      this.$router.push("/");
+      return;
+    }
+    this.fetchNewsDetail();
+    this.fetchComments();
+  },
+};
+</script>
+
+
+<style scoped>
+.reply-box {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.reply-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.reply-file-input {
+  margin-bottom: 10px;
+}
+
+.btn-submit-reply {
+  background-color: #3498db;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-submit-reply:hover {
+  background-color: #2980b9;
+}
+
+/* Tổng quan */
+.news-detail {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Tin tức */
+.news-container {
+  margin-bottom: 30px;
+}
+
+.news-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.news-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.news-content {
+  font-size: 18px;
+  line-height: 1.8;
+  text-align: justify;
+  color: #555;
+  padding: 10px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+/* Bình luận */
+.comments-section {
+  margin-top: 30px;
+  padding: 20px;
+  border-top: 2px solid #eaeaea;
+  background-color: #fcfcfc;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.comments-section h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #34495e;
+  border-left: 4px solid #3498db;
+  padding-left: 10px;
+  font-weight: bold;
+}
+
+/* Danh sách bình luận */
+.comment-list {
+  margin-top: 10px;
+}
+
+.comment-item,
+.reply-item {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.comment-header,
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-author,
+.reply-author {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.comment-time,
+.reply-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.comment-content,
+.reply-content {
+  font-size: 16px;
+  margin-top: 10px;
+  color: #444;
+}
+
+.comment-image,
+.reply-image {
+  max-width: 100px;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 5px;
+}
+
+/* Trả lời bình luận */
+.btn-reply-comment {
+  margin-top: 10px;
+  font-size: 14px;
+  background-color: #eaf2fb;
+  color: #3498db;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-reply-comment:hover {
+  background-color: #d4e8fc;
+}
+
+/* Phần thêm bình luận */
+.add-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.comment-input {
+  width: 100%;
+  height: 80px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: none;
+  outline: none;
+  background-color: #ffffff;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.comment-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.comment-file-input {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  outline: none;
+}
+
+.btn-submit-comment {
+  align-self: flex-end;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-submit-comment:hover {
+  background-color: #2980b9;
+}
+
+/* Scrollbar tùy chỉnh */
+.comment-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.comment-list::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.comment-list::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa;
+}
+
+/* Phân cấp trả lời */
+.reply-item {
+  margin-left: 30px;
+  background-color: #f7f7f7;
+}
+</style>
+

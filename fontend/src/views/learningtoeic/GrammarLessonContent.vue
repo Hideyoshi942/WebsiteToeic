@@ -13,19 +13,19 @@
       </div>
 
       <!-- Nội dung bài học -->
-      <div class="lesson-detail mb-5">
+      <div class="lesson-detail mb-5" v-if="lessonDetail">
         <div class="text-center mb-4">
           <img
-              :src="`${baseUrl}${lessonDetail?.grammarimage}`"
+              :src="`${baseUrl}${lessonDetail.grammarimage}`"
               alt="Grammar Image"
               class="img-fluid rounded"
               style="max-height: 300px; object-fit: cover;"
           />
         </div>
         <label for="grammarcontenthtml">Tên bài học:</label>
-        <p v-html="lessonDetail?.grammarcontenthtml"></p>
+        <p v-html="lessonDetail.grammarcontenthtml"></p>
         <label for="grammarcontenthtmlmarkdown">Nội dung bài học:</label>
-        <p v-html="lessonDetail?.grammarcontenthtmlmarkdown"></p>
+        <p v-html="renderMarkdown(lessonDetail.grammarcontenthtmlmarkdown)"></p>
       </div>
 
       <!-- Phần tạo bình luận -->
@@ -71,6 +71,8 @@ import { useRoute } from "vue-router";
 import axios from "axios";
 import AppHeader from "@/components/Header.vue";
 import FooterPage from "@/components/FooterPage.vue";
+import { marked } from "marked";
+import DOMPurify from 'dompurify';
 
 const baseUrl = "http://localhost:8080";
 
@@ -93,6 +95,12 @@ const loadLessonDetail = async () => {
     console.error("Error loading lesson detail:", error);
   }
 };
+
+const renderMarkdown = (markdown) => {
+  const dirtyHtml = marked(markdown);
+  return DOMPurify.sanitize(dirtyHtml); // Sử dụng DOMPurify để làm sạch HTML
+};
+
 
 // Fetch comments
 const loadComments = async () => {

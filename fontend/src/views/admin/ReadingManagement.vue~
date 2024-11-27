@@ -185,7 +185,7 @@ onMounted(() => {
         <td>{{ getDoKhoText(baiDoc.readinglevel) }}</td>
         <td>
           <button class="btn btn-primary" @click="openModal(baiDoc)" style="margin-right: 10px;">Cập nhật</button>
-          <button class="btn btn-danger" @click="deleteReading(baiDoc.id)">Xóa</button>
+          <button class="btn btn-danger" @click="deleteReading(baiDoc.readingid)">Xóa</button>
         </td>
       </tr>
       </tbody>
@@ -201,7 +201,7 @@ onMounted(() => {
     <!-- Modal -->
     <div v-if="showModal">
       <div class="modal-overlay" @click="closeModal"></div> <!-- Nền tối -->
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog" role="document" style="margin-top: 110px;">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ newBaiDoc.id ? 'Cập nhật' : 'Thêm mới' }} bài đọc</h5>
@@ -217,7 +217,7 @@ onMounted(() => {
               </div>
               <div class="form-group">
                 <label for="part">Phần</label>
-                <select class="form-control" id="part" v-model="newBaiDoc.part">
+                <select class="form-control" id="part" v-model="newBaiDoc.part" style="padding: 8px 0px;">
                   <option value="5">Part 5-Complete sentence</option>
                   <option value="6">Part 6-Complete the paragraph</option>
                   <option value="7">Part 7-Reading comprehension</option>
@@ -250,60 +250,246 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Nền tối phía sau modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Tổng thể */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f7f9fc;
+  color: #333;
 }
 
-/* Modal chính giữa màn hình */
-.modal-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* Căn giữa theo cả X và Y */
-  z-index: 1050;
-  width: 500px; /* Độ rộng của modal */
-  max-width: 90%; /* Đáp ứng trên màn hình nhỏ */
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  animation: fadeIn 0.3s ease-in-out;
+/* Header */
+h3.page-header {
+  font-weight: bold;
+  color: #4a90e2;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
 }
 
-/* Hiệu ứng xuất hiện modal */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -55%); /* Giảm nhẹ khi xuất hiện */
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
-/* Đóng modal */
-.modal-header .close {
+/* Button chính */
+.btn-success {
+  background-color: #4caf50;
+  color: white;
   border: none;
-  background: none;
-  font-size: 1.5rem;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.btn-success:hover {
+  background-color: #45a049;
+}
+
+/* Form Tìm kiếm */
+.form-inline {
+  margin-bottom: 20px;
+}
+
+.form-inline .form-group {
+  margin-right: 10px;
+}
+
+.form-inline select,
+.form-inline button {
+  border-radius: 5px;
+  padding: 8px 12px;
+}
+
+/* Bảng dữ liệu */
+.table-hover {
+  width: 100%;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-hover thead {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.table-hover th,
+.table-hover td {
+  padding: 12px 15px;
+  text-align: center;
+}
+
+.table-hover tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table-hover tr:hover {
+  background-color: #eaf1f8;
   cursor: pointer;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination li {
+  list-style: none;
+  margin: 0 5px;
+}
+
+.pagination a {
+  display: block;
+  padding: 8px 12px;
+  color: #4a90e2;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a:hover {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.pagination .active a {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+}
+
+/* Modal */
+  /* Nền tối phía sau modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040; /* Lớp phủ */
+  }
+
+  /* Modal chính */
+  .modal-dialog {
+    position: fixed;
+    top: 50%; /* Căn giữa theo chiều dọc */
+    left: 50%; /* Căn giữa theo chiều ngang */
+    transform: translate(-50%, -50%);
+    z-index: 1050; /* Đảm bảo modal nằm trên lớp phủ */
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 600px;
+    max-width: 95%;
+  }
+
+  /* Đóng modal */
+  .modal-header .close {
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #000;
+  }
+
+  /* Hiệu ứng modal xuất hiện */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -60%); /* Hiệu ứng nhẹ khi xuất hiện */
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  .modal-dialog {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.modal-header h5 {
+  font-size: 18px;
+  margin: 0;
+  color: #333;
+}
+
+.modal-header .close {
+  font-size: 20px;
+  color: #aaa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.modal-header .close:hover {
   color: #000;
 }
 
-/* Nút trong modal */
+.modal-body {
+  padding-top: 20px;
+}
+
+.modal-body .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-body label {
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-body input,
+.modal-body textarea,
+.modal-body select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
 .modal-footer button {
-  margin-left: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.modal-footer .btn-primary {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #3a7dd0;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #ddd;
+  color: #333;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #ccc;
 }
 </style>
 

@@ -18,6 +18,8 @@ public class PracticeTest {
 
   private String practicetestimage;
 
+  private int practicetestlevel;
+
   public PracticeTest() {
   }
 
@@ -27,7 +29,16 @@ public class PracticeTest {
         "practicetestid=" + practicetestid +
         ", practicetestname='" + practicetestname + '\'' +
         ", practicetestimage='" + practicetestimage + '\'' +
+        ", practicetestlevel=" + practicetestlevel +
         '}';
+  }
+
+  public int getPracticetestlevel() {
+    return practicetestlevel;
+  }
+
+  public void setPracticetestlevel(int practicetestlevel) {
+    this.practicetestlevel = practicetestlevel;
   }
 
   public int getPracticetestid() {
@@ -54,9 +65,11 @@ public class PracticeTest {
     this.practicetestimage = practicetestimage;
   }
 
-  public PracticeTest(int practicetestid, String practicetestname, String practicetestimage) {
+  public PracticeTest(int practicetestid, String practicetestname, String practicetestimage,
+      int practicetestlevel) {
     this.practicetestid = practicetestid;
     this.practicetestname = practicetestname;
     this.practicetestimage = practicetestimage;
+    this.practicetestlevel = practicetestlevel;
   }
 }

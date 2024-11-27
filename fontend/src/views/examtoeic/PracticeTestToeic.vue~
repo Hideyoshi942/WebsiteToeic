@@ -7,16 +7,17 @@ const route = useRoute();
 
 // Trạng thái bài thi
 const questions = ref([]);
+const pageQuestions = ref([[], []]);
 const practicetestid = +route.params.id;
 const usertoeic = JSON.parse(localStorage.getItem('usertoeic'));
-const timer = ref(1800); // 30 phút
+const timer = ref(1800);
 const isSubmitted = ref(false);
 const isLoading = ref(true);
 
 // Pagination state
 const currentPage = ref(1);
-const pageSize = 50; // Số lượng câu hỏi mỗi trang
-const totalPages = 2; // Tổng số trang cố định
+const pageSize = 50;
+const totalPages = 2;
 
 // Thống kê
 const correctListening = ref(0);
@@ -25,13 +26,22 @@ const correctReading = ref(0);
 const incorrectReading = ref(0);
 
 // Gọi API để tải danh sách câu hỏi
-const loadQuestions = async (page = 1) => {
+const loadQuestions = async () => {
   try {
     isLoading.value = true;
-    const response = await axios.get(
-        `http://localhost:8080/api/admin/practicetest/loadQuestionPracticeTest/${practicetestid}?page=${page}&size=${pageSize}`
+
+    // Lấy câu hỏi cho trang 1
+    const response1 = await axios.get(
+        `http://localhost:8080/api/admin/practicetest/loadQuestionPracticeTest/${practicetestid}?page=1&size=${pageSize}`
     );
-    questions.value = response.data.content.map((q) => ({
+
+    // Lấy câu hỏi cho trang 2
+    const response2 = await axios.get(
+        `http://localhost:8080/api/admin/practicetest/loadQuestionPracticeTest/${practicetestid}?page=2&size=${pageSize}`
+    );
+
+    // Lưu câu hỏi cho từng trang
+    pageQuestions.value[0] = response1.data.content.map((q) => ({
       id: q.questionpracticetestid,
       question: q.questionpracticetestask,
       answers: [
@@ -46,6 +56,30 @@ const loadQuestions = async (page = 1) => {
       audio: q.questionpracticetestaudio,
       image: q.questionpracticetestimage,
     }));
+
+    pageQuestions.value[1] = response2.data.content.map((q) => ({
+      id: q.questionpracticetestid,
+      question: q.questionpracticetestask,
+      answers: [
+        q.questionpracticetestanswer1,
+        q.questionpracticetestanswer2,
+        q.questionpracticetestanswer3,
+        q.questionpracticetestanswer4,
+      ],
+      correctAnswer: ["A", "B", "C", "D"].indexOf(q.questionpracticetestanswercorrect),
+      explanation: q.questionpracticetestparagraph,
+      userAnswer: null,
+      audio: q.questionpracticetestaudio,
+      image: q.questionpracticetestimage,
+    }));
+
+    // Đảo ngẫu nhiên câu hỏi cho mỗi trang riêng biệt
+    shuffleQuestions(pageQuestions.value[0]);
+    shuffleQuestions(pageQuestions.value[1]);
+
+    // Hiển thị câu hỏi cho trang hiện tại
+    updateQuestionsForCurrentPage();
+
     isLoading.value = false;
   } catch (error) {
     console.error("Error loading questions:", error);
@@ -53,11 +87,42 @@ const loadQuestions = async (page = 1) => {
   }
 };
 
+
+// Kiểm tra tính hợp lệ của ảnh
+const isValidImage = (imagePath) => {
+  const imageUrl = `http://localhost:8080/api/admin/practicetest/imagequestion/${imagePath}`;
+  const img = new Image();
+  img.src = imageUrl;
+  return img.complete && img.naturalHeight !== 0;
+};
+
+// Xử lý sự kiện lỗi khi không tải được ảnh
+const handleImageError = (event) => {
+  event.target.style.display = "none"; // Ẩn ảnh nếu lỗi tải
+};
+
+// Thuật toán Fisher-Yates shuffle
+const shuffleQuestions = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+};
+
 // Chuyển trang
 const goToNextPage = () => {
   if (currentPage.value < totalPages) {
     currentPage.value++;
-    loadQuestions(currentPage.value);
+    updateQuestionsForCurrentPage();
+  }
+};
+
+// Cập nhật câu hỏi theo trang hiện tại
+const updateQuestionsForCurrentPage = () => {
+  if (currentPage.value === 1) {
+    questions.value = pageQuestions.value[0];
+  } else if (currentPage.value === 2) {
+    questions.value = pageQuestions.value[1];
   }
 };
 
@@ -103,24 +168,33 @@ const calculateResults = () => {
 const submitTest = async () => {
   isSubmitted.value = true;
   calculateResults();
-  console.log(practicetestid,
-      usertoeic.id,
-      correctListening.value,
-      correctReading.value,
-      incorrectListening.value,
-      incorrectReading.value
-  );
+
+  // Gửi kết quả của cả 2 trang
+  const allQuestions = [...pageQuestions.value[0], ...pageQuestions.value[1]];
+  const results = allQuestions.map(q => ({
+    detailresultexamquestionid: q.id,
+    detailresultexamquestion: q.question,
+    detailresultexamansweruser: q.userAnswer !== null ? q.answers[q.userAnswer] : null,
+    detailresultexamanswercorrect: q.answers[q.correctAnswer]
+  }));
+
+  console.log(results);
   // Gửi kết quả lên API
   try {
-    const params = new URLSearchParams();
-    params.append("resulttestcorrectlistening", correctListening.value);
-    params.append("resulttestcorrectreading", correctReading.value);
-    params.append("resulttestnumbercorrect", correctListening.value + correctReading.value);
-    params.append("resulttestnumberincorrect", incorrectListening.value + incorrectReading.value);
-    params.append("id", usertoeic.id);
+    await axios.post(
+        `http://localhost:8080/api/admin/result/saveResult/${practicetestid}`,
+        results, {
+          params: {
+            resulttestcorrectlistening: correctListening.value || 0,
+            resulttestcorrectreading: correctReading.value || 0,
+            resulttestnumbercorrect: (correctListening.value || 0) + (correctReading.value || 0),
+            resulttestnumberincorrect: (incorrectListening.value || 0) + (incorrectReading.value || 0),
+            id: usertoeic.id
+          }
+        }
+    );
 
-    await axios.post(`http://localhost:8080/api/admin/result/saveResult/${practicetestid}`, params);
-    
+    alert("Kết quả đã được nộp thành công.");
   } catch (error) {
     console.error("Error saving results:", error);
     alert("Lỗi lưu kết quả, vui lòng thử lại sau.");
@@ -154,10 +228,10 @@ onMounted(() => {
         <h5 class="text-center text-secondary">Câu hỏi</h5>
         <div class="grid d-grid gap-2">
           <button style="width: 25px; height: 25px;"
-              v-for="(q, index) in questions"
-              :key="q.id"
-              class="btn question-box"
-              :class="questionStatus[index]"
+                  v-for="(q, index) in questions"
+                  :key="q.id"
+                  class="btn question-box"
+                  :class="questionStatus[index]"
           >
             {{ index + 1 }}
           </button>
@@ -170,9 +244,9 @@ onMounted(() => {
         <p class="text-danger">Câu sai Reading: {{ incorrectReading }}</p>
       </div>
       <button style="margin-bottom: 10px;"
-          class="btn btn-primary w-100 mt-3"
-          @click="submitTest"
-          :disabled="isLoading"
+              class="btn btn-primary w-100 mt-3"
+              @click="submitTest"
+              :disabled="isLoading"
       >
         Nộp bài
       </button>
@@ -202,23 +276,24 @@ onMounted(() => {
           </div>
           <div v-if="question.image" class="mb-3">
             <img
-                :src="`http://localhost:8080/api/admin/practicetest/images/${question.image}.jpg`"
+                :src="`http://localhost:8080/api/admin/practicetest/imagequestion/${question.image}`"
                 alt="Question Image"
                 class="img-fluid rounded"
                 style="max-height: 200px;"
+                @error="handleImageError($event)"
             />
           </div>
           <div class="answers">
             <button style="height: 50px;"
-                v-for="(answer, idx) in question.answers"
-                :key="idx"
-                class="btn btn-outline-secondary btn-block text-start mb-2"
-                :class="{
+                    v-for="(answer, idx) in question.answers"
+                    :key="idx"
+                    class="btn btn-outline-secondary btn-block text-start mb-2"
+                    :class="{
                 'btn-warning': question.userAnswer === idx && !isSubmitted,
                 'btn-success': isSubmitted && idx === question.correctAnswer,
                 'btn-danger': isSubmitted && idx === question.userAnswer && idx !== question.correctAnswer,
               }"
-                @click="selectAnswer(question.id, idx)"
+                    @click="selectAnswer(question.id, idx)"
             >
               {{ answer }}
             </button>
@@ -228,6 +303,9 @@ onMounted(() => {
     </main>
   </div>
 </template>
+
+
+
 
 <style scoped>
 /* Tổng thể */

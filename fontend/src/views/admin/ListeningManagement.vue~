@@ -64,7 +64,7 @@
     <!-- Modal thêm bài nghe -->
     <div v-if="showModal">
       <div class="modal-overlay" @click="closeModal"></div> <!-- Nền tối -->
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog" role="document" style="margin-top: 100px;">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Tạo mới/Cập nhật bài nghe</h5>
@@ -108,7 +108,7 @@
                 <input
                     type="file"
                     ref="audioInput"
-                    @change="previewFiles"
+                    @change="previewAudioFiles"
                     class="form-control"
                     id="file_questionlistening"
                     multiple
@@ -282,28 +282,150 @@ onMounted(() => {
 
 
 <style scoped>
+/* Header */
 .page-header {
   text-align: center;
-  color: black;
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  font-weight: bold;
 }
-.btn-danger {
+
+/* Nút Thêm bài nghe */
+.btn-success {
+  font-size: 1rem;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  background-color: #28a745;
+  border: none;
   color: white;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Form tìm kiếm */
+.form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-inline .form-control {
+  width: 200px;
+  padding: 8px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.form-inline .form-control:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Nút Duyệt bài nghe */
+.btn-primary {
+  padding: 8px 15px;
+  font-size: 1rem;
+  border-radius: 5px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* Bảng bài nghe */
+.table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  text-align: left;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.table th, .table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+  background-color: #343a40;
+  color: white;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+.btn-danger {
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  border-radius: 3px;
   background-color: #dc3545;
-  border-color: #dc3545;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease-in-out;
 }
 
 .btn-danger:hover {
   background-color: #c82333;
-  border-color: #bd2130;
 }
-/* Đảm bảo modal hiển thị chính giữa màn hình */
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination .page-item {
+  margin: 0 5px;
+}
+
+.pagination .page-link {
+  padding: 10px 15px;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.pagination .page-link:hover {
+  background-color: #0056b3;
+}
+
+/* Modal */
 .modal-dialog {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1050;
-  width: 500px; /* Độ rộng của modal */
+  width: 600px; /* Tăng kích thước modal */
   max-width: 90%; /* Responsive trên màn hình nhỏ */
   background-color: white;
   border-radius: 8px;
@@ -312,18 +434,95 @@ onMounted(() => {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Tối nền phía sau modal */
+/* Modal header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  color: #343a40;
+  font-weight: bold;
+}
+
+.modal-header .close {
+  font-size: 1.5rem;
+  color: #6c757d;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Modal footer */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-footer .btn {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Nút trong modal */
+.modal-footer .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.modal-footer .btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* Modal body */
+.modal-body {
+  font-size: 1rem;
+}
+
+.modal-body .form-control {
+  font-size: 1rem;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+}
+
+.modal-body .form-control:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Nền tối phía sau modal */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Màu nền tối với độ trong suốt */
-  z-index: 1040; /* Nền overlay dưới modal */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
 }
 
-/* Thêm hiệu ứng fade-in cho modal */
+/* Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -333,17 +532,4 @@ onMounted(() => {
   }
 }
 
-/* Nút đóng trong modal */
-.modal-header .close {
-  border: none;
-  background: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
 </style>

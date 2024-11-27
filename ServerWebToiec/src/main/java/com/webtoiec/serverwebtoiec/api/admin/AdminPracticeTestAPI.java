@@ -64,9 +64,11 @@ public class AdminPracticeTestAPI {
       Map<String, Object> map = new HashMap<>();
       map.put("practicetestid", practiceTest.getPracticetestid());
       map.put("practicetestname", practiceTest.getPracticetestname());
+      map.put("practicetestlevel", practiceTest.getPracticetestlevel());
       map.put("practicetestimage", "/api/admin/practicetest/image/" + URLEncoder.encode(practiceTest.getPracticetestimage(), StandardCharsets.UTF_8));
       response.add(map);
     }
+    System.out.println(response);
 
     return response;
   }
@@ -105,12 +107,35 @@ public class AdminPracticeTestAPI {
     }
   }
 
+  @GetMapping("/imagequestion/{filename}")
+  public ResponseEntity<Resource> serveImageQuestion(@PathVariable String filename) {
+    try {
+      String decodedFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8.name());
+      Path filePath = Paths.get("src/main/resources/static/img/question").resolve(decodedFilename).normalize();
+
+      Resource resource = new UrlResource(filePath.toUri());
+      if (!resource.exists()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+      }
+
+      String contentType = Files.probeContentType(filePath);
+      if (contentType == null) {
+        contentType = "application/octet-stream";
+      }
+
+      return ResponseEntity.ok()
+          .contentType(MediaType.parseMediaType(contentType))
+          .body(resource);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+  }
+
   @GetMapping("/audio/{filename}")
   public ResponseEntity<Resource> serveAudio(@PathVariable String filename) {
     try {
       String decodedFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8.name());
       Path filePath = Paths.get("src/main/resources/static/audio/practicetest").resolve(decodedFilename).normalize();
-      System.out.println("Audio path being accessed: " + filePath.toString());
       Resource resource = new UrlResource(filePath.toUri());
       if (!resource.exists()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -141,7 +166,8 @@ public class AdminPracticeTestAPI {
       @RequestParam("name") String name,
       @RequestParam("file_image") MultipartFile file_image,
       @RequestParam("file_image_question") MultipartFile[] file_image_question,
-      @RequestParam("file_listening") MultipartFile[] file_listening) {
+      @RequestParam("file_listening") MultipartFile[] file_listening,
+      @RequestParam("practicetestlevel") int practicetestlevel) {
     List<String> response = new ArrayList<>();
     String rootDirectory = Paths.get("src/main").toAbsolutePath().toString();
 
@@ -149,19 +175,20 @@ public class AdminPracticeTestAPI {
     practicetestService.save(practiceTest);
 
     try {
-      Path pathExcel = Paths.get(rootDirectory + "/resources/static/excel/"  + "practicetest." + practiceTest.getPracticetestid() + "." + file_excel.getOriginalFilename());
+      Path pathExcel = Paths.get(rootDirectory + "/resources/static/excel/practicetest/"  + practiceTest.getPracticetestid() + "." + file_excel.getOriginalFilename());
       file_excel.transferTo(new File(pathExcel.toString()));
-      Path pathImage = Paths.get(rootDirectory + "/resources/static/img/practicetest/"  + "" + practiceTest.getPracticetestid() + "." + file_image.getOriginalFilename());
+      Path pathImage = Paths.get(rootDirectory + "/resources/static/img/practicetest/" + practiceTest.getPracticetestid() + "." + file_image.getOriginalFilename());
       file_image.transferTo(new File(pathImage.toString()));
       for (MultipartFile single_listening : file_listening) {
-        Path pathImageQuestion = Paths.get(rootDirectory + "/resources/static/img/listening/"  + "" + practiceTest.getPracticetestid() + "." + single_listening.getOriginalFilename());
+        Path pathImageQuestion = Paths.get(rootDirectory + "/resources/static/audio/practicetest/" + practiceTest.getPracticetestid() + "." + single_listening.getOriginalFilename());
         single_listening.transferTo(new File(pathImageQuestion.toString()));
       }
       for (MultipartFile single_image : file_image_question) {
-        Path pathImageQuestion = Paths.get(rootDirectory + "/resources/static/img/question/" + "" + practiceTest.getPracticetestid() + "." + single_image.getOriginalFilename());
+        Path pathImageQuestion = Paths.get(rootDirectory + "/resources/static/img/question/" + practiceTest.getPracticetestid() + "." + single_image.getOriginalFilename());
         single_image.transferTo(new File(pathImageQuestion.toString()));
       }
       practiceTest.setPracticetestname(name);
+      practiceTest.setPracticetestlevel(practicetestlevel);
       practiceTest.setPracticetestimage(practiceTest.getPracticetestid() + "." + file_image.getOriginalFilename());
       practicetestService.save(practiceTest);
 

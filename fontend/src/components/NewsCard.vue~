@@ -1,0 +1,102 @@
+<template>
+  <div class="news-card" @click="goToDetail">
+    <!-- Hình ảnh bài viết -->
+    <img
+        :src="imageSrc || defaultImageSrc"
+        alt="news image"
+        class="news-card-image"
+    />
+    <!-- Nội dung bài viết -->
+    <div class="news-card-content">
+      <h3>{{ title }}</h3>
+      <p>{{ shortenedContent }}</p>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "NewsCard",
+  props: {
+    postid: {
+      type: [String, Number], // Đảm bảo nhận cả String hoặc Number
+      required: true, // postid là bắt buộc
+    },
+    imageSrc: {
+      type: String,
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+  },
+  computed: {
+    // Rút gọn nội dung nếu quá dài
+    shortenedContent() {
+      const maxLength = 100; // Độ dài tối đa
+      return this.content.length > maxLength
+          ? `${this.content.substring(0, maxLength)}...`
+          : this.content;
+    },
+    // Đường dẫn hình ảnh mặc định nếu không có hình ảnh
+    defaultImageSrc() {
+      return "../public/img/default-image.jpg"; // Cập nhật đúng đường dẫn
+    },
+  },
+  methods: {
+    goToDetail() {
+      this.$router.push({ name: 'NewsDetails', params: { id: this.postid } });
+    },
+  },
+};
+</script>
+
+<style scoped>
+.news-card {
+  display: flex;
+  align-items: flex-start;
+  margin: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  text-decoration: none;
+  transition: transform 0.2s ease-in-out;
+}
+
+.news-card:hover {
+  transform: scale(1.03);
+}
+
+.news-card-image {
+  width: 150px;
+  height: 120px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+
+.news-card-content {
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.news-card-content h3 {
+  font-size: 20px;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 5px;
+}
+
+.news-card-content p {
+  font-size: 16px;
+  color: #555;
+  margin: 0;
+}
+</style>

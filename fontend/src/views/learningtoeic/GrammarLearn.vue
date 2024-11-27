@@ -40,7 +40,7 @@ onMounted(() => {
 <template>
   <div class="d-flex flex-column min-vh-100">
     <AppHeader></AppHeader>
-    <main class="flex-grow-1 container mt-5">
+    <main class="flex-grow-1 container mt-5" style=" margin-bottom:20px;">
       <!-- Title -->
       <div class="text-center mb-4">
         <h3 class="page-header text-primary fw-bold">Danh sách bài học ngữ pháp</h3>
